@@ -3,6 +3,9 @@ name: Build and deploy app
 on:
   push
 
+permissions:
+  contents: read
+
 # CONFIGURATION
 env:
   AZURE_WEBAPP_NAME: FintechAppService                   # Your application's name
@@ -20,39 +23,38 @@ jobs:
     steps:
 
       # Checkout the repo
-      - uses: actions/checkout@v2
+      - name: Check out code
+        uses: actions/checkout@v2
       
       # Setup .NET Core SDK
-      - name: Setup .NET Core
+      - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }} 
       
       # Run dotnet build and publish
-      - name: dotnet build and publish
+      - name: Build and publish the app
         run: |
           dotnet build --configuration Release
           dotnet publish -c Release -o myapp 
           
       # Deploy to Azure Web App using publish profile
-      - name: 'Run Azure webapp deploy action using publish profile credentials'
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with: 
           app-name: ${{ env.AZURE_WEBAPP_NAME }}            # Your app name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}  # Publish profile from secrets
           package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp'
-          slot-name: production
+          slot-name: production  # Use 'production' if not using a staging slot
 
-      # Azure CLI Login using Service Principal with Client Secret
-      - name: Login for az cli commands 
+      # Azure CLI Login using Service Principal with `creds`
+      - name: Login to Azure CLI
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       
       # Create DB connection string
-      - name: create db connection string
+      - name: Create database connection string
         run: |
           CONN_STR=$(az sql db show-connection-string --client ado.net --server ${{ env.SQLSERVER_NAME }} --name ${{ env.DATABASE_NAME }} -o tsv)
           CONN_STR=$(echo $CONN_STR | sed "s/<username>/${{ env.SQLADMIN_LOGIN }}/g")
@@ -60,16 +62,15 @@ jobs:
           echo "SQL_DB_CONN_STR=$CONN_STR" >> $GITHUB_ENV
 
       # Update Database
-      - name: Update Database
+      - name: Update the database
         run: |
           dotnet tool install --global dotnet-ef
           dotnet ef database update
         env:
           ConnectionStrings__MyDbConnection: ${{ env.SQL_DB_CONN_STR }}
       
-      # Swap to production slot (if you are using a staging slot)
+      # Swap to production slot if using a staging slot
       - name: Swap to production slot
-        if: always()  # only if you are using a staging slot
         run: |
           az webapp deployment slot swap --resource-group ${{ env.AZURE_RESOURCEGROUP_NAME }} --name ${{ env.AZURE_WEBAPP_NAME }} --slot staging --target-slot production
           echo "Swap finished. App Service Application URL: https://$(az webapp show --resource-group ${{ env.AZURE_RESOURCEGROUP_NAME }} --name ${{ env.AZURE_WEBAPP_NAME }} --query hostNames[0] -o tsv)"
