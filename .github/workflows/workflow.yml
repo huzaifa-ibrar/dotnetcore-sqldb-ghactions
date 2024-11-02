@@ -55,7 +55,7 @@ jobs:
       - name: Login for az cli commands 
         uses: azure/login@v1
         with:
-          client-id: f8a4163d-d257-4b34-949a-966107e29a61
+          client-id: 0af554f5-3eb2-4673-bf7c-28096f831784
           tenant-id: ed27b597-cea0-4942-8c6f-40e6a78bf47d
           subscription-id: 72e7bb81-e5a0-4c0d-ac9d-702d05d687ec
 
