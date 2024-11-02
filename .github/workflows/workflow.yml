@@ -8,14 +8,14 @@ permissions:
   contents: read
 
 env:
-  AZURE_WEBAPP_NAME: FintechAppService               # Update this to your application's name
+  AZURE_WEBAPP_NAME: FintechAppService               # Your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'                     # Path to your web app project
   DOTNET_VERSION: '8.0'                              # Update this to .NET 8 if needed
-  AZURE_RESOURCEGROUP_NAME: FintechAppResourceGroup   # Update this to your resource group name
-  SQLSERVER_NAME: fintechsqlserver                    # Update this to your SQL server name
-  DATABASE_NAME: fintechdatabase                      # Update this to your SQL database name
-  SQLADMIN_LOGIN: hibrar1.admin       # SQL Admin login name from secrets
-  SQLADMIN_PASS: Smile580.***         # SQL Admin password from secrets
+  AZURE_RESOURCEGROUP_NAME: FintechAppResourceGroup   # Your resource group name
+  SQLSERVER_NAME: fintechsqlserver                    # Your SQL server name
+  DATABASE_NAME: fintechdatabase                      # Your SQL database name
+  SQLADMIN_LOGIN: ${{ secrets.SQLADMIN_LOGIN }}       # SQL Admin login name from secrets
+  SQLADMIN_PASS: ${{ secrets.SQLADMIN_PASS }}         # SQL Admin password from secrets
   
 jobs:
   build-and-deploy:
@@ -52,13 +52,17 @@ jobs:
           package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp'
           slot-name: production  # Adjust if using a staging slot
 
+      # Azure Login with OIDC for CLI Commands
       - name: Login for az cli commands 
         uses: azure/login@v1
         with:
-          client-id: fcb7d16b-f229-4c21-9c70-bccdeefb491f
-          tenant-id: ed27b597-cea0-4942-8c6f-40e6a78bf47d
-          subscription-id: 72e7bb81-e5a0-4c0d-ac9d-702d05d687ec
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          allow-no-subscription: true  # Optional, based on your setup
+          federated-token: ${{ secrets.AZURE_FEDERATED_TOKEN }}
 
+      # Create DB connection string
       - name: create db connection string
         run: |
           CONN_STR=$(az sql db show-connection-string --client ado.net --server ${{ env.SQLSERVER_NAME }} --name ${{ env.DATABASE_NAME }} -o tsv)
@@ -66,6 +70,7 @@ jobs:
           CONN_STR=$(echo $CONN_STR | sed "s/<password>/${{ env.SQLADMIN_PASS }}/g")
           echo "SQL_DB_CONN_STR=$CONN_STR" >> $GITHUB_ENV
 
+      # Update Database
       - name: Update Database
         run: |
           dotnet tool install --global dotnet-ef
@@ -73,6 +78,7 @@ jobs:
         env:
           ConnectionStrings__MyDbConnection: ${{ env.SQL_DB_CONN_STR }}
       
+      # Swap to production slot
       - name: Swap to production slot
         run: |
           az webapp deployment slot swap --resource-group ${{ env.AZURE_RESOURCEGROUP_NAME }} --name ${{ env.AZURE_WEBAPP_NAME }} --slot staging --target-slot production
