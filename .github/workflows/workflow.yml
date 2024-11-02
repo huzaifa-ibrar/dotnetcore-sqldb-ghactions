@@ -3,7 +3,6 @@ name: Build and deploy app
 on:
   push
 
-
 permissions:
   id-token: write
   contents: read
@@ -26,11 +25,17 @@ jobs:
       # Checkout the repo
       - uses: actions/checkout@v2
       
-      # Setup .NET Core SDK
-      - name: Setup .NET Core
+      # Setup .NET Core SDK for .NET Core 3.1
+      - name: Setup .NET Core 3.1
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: '3.1.x'  # Install .NET Core 3.1 runtime
+
+      # Setup .NET Core SDK for .NET 8.0
+      - name: Setup .NET Core 8.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0.x'  # Install .NET 8 runtime
       
       # Run dotnet build and publish
       - name: dotnet build and publish
@@ -50,7 +55,9 @@ jobs:
       - name: Login for az cli commands 
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: f8a4163d-d257-4b34-949a-966107e29a61
+          tenant-id: ed27b597-cea0-4942-8c6f-40e6a78bf47d
+          subscription-id: 72e7bb81-e5a0-4c0d-ac9d-702d05d687ec
 
       - name: create db connection string
         run: |
