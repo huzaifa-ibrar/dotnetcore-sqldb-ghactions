@@ -17,7 +17,7 @@ env:
   AZURE_RESOURCEGROUP_NAME: FintechAppResourceGroup # set this to your preferred resource group name
   SQLSERVER_NAME: fintechsqlserver                          # set this to your preferred sql server name
   DATABASE_NAME: fintechdatabase                   # set this to your preferred sql database name
-  SQLADMIN_LOGIN: ${{ secrets.SQLADMIN_LOGIN  }}                # Create a secret in your Github repo for the SQL Admin login name you want to use
+  SQLADMIN_LOGIN: hibrar1.admin                # Create a secret in your Github repo for the SQL Admin login name you want to use
   SQLADMIN_PASS: ${{ secrets.SQLADMIN_PASS  }}                 # Create a secret in your Github repo for the SQL Admin password you want to use
   
 jobs:
