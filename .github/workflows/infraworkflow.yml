@@ -4,14 +4,15 @@ on:
         paths: 
         - 'ARM/**'
         - '.github/workflows/infraworkflow.yml'
+    workflow_dispatch:
 
 env:
-    AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID  }}    # set this to your Azure Subscription Id
-    AZURE_RESOURCEGROUP_NAME: demo-webappsql-gh-actions                      # set this to your preferred resource group name
-    AZURE_WEBAPP_NAME: demo-webappsql-gh-actions-unique                          # set this to your preferred web app name
-    ASP_NAME: demo-webappsql-gh-actions
-    SQLSERVER_NAME: demo-webappsql-gh-actions-srv                          # set this to your preferred sql server name
-    DATABASE_NAME: demo-webappsql-gh-actions-db                   # set this to your preferred sql database name
+    AZURE_SUBSCRIPTION_ID: 72e7bb81-e5a0-4c0d-ac9d-702d05d687ec    # set this to your Azure Subscription Id
+    AZURE_RESOURCEGROUP_NAME: myappresourcegroup                      # set this to your preferred resource group name
+    AZURE_WEBAPP_NAME: huzapp99                          # set this to your preferred web app name
+    ASP_NAME: mysp1
+    SQLSERVER_NAME: demo-webappsql-gh-actions-srv21                          # set this to your preferred sql server name
+    DATABASE_NAME: demo-webappsql-gh-actions-db21                   # set this to your preferred sql database name
     SQLADMIN_LOGIN: ${{ secrets.SQLADMIN_LOGIN  }}                # Create a secret in your Github repo for the SQL Admin login name you want to use
     SQLADMIN_PASS: ${{ secrets.SQLADMIN_PASS  }}                 # Create a secret in your Github repo for the SQL Admin password you want to use
 
