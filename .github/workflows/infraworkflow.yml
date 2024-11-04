@@ -4,7 +4,7 @@ on:
         paths: 
         - 'ARM/**'
         - '.github/workflows/infraworkflow.yml'
-    workflow_dispatch:
+   
 
 env:
     AZURE_SUBSCRIPTION_ID: 72e7bb81-e5a0-4c0d-ac9d-702d05d687ec    # set this to your Azure Subscription Id
